@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-API_KEY = os.environ["NEC_API_KEY"]
+CANDIDATE_API_KEY = os.environ["NEC_CANDIDATE_API_KEY"]
+PLEDGE_API_KEY = os.environ["NEC_PLEDGE_API_KEY"]
 SG_ID = "20260603"
 SG_TYPECODES = {
     "3": "광역단체장",
