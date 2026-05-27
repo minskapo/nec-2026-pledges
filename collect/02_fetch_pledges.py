@@ -10,8 +10,7 @@ from config import PLEDGE_API_KEY, SG_ID, PLEDGE_API, DATA_DIR
 
 ELECTION_TYPE_TO_CODE = {
     "시·도지사선거": "3",
-    "교육감선거": "4",
-    "구·시·군의 장선거": "5",
+    "구·시·군의 장선거": "4",  # API typecode: 3=광역단체장, 4=기초단체장 (교육감은 이 엔드포인트 미지원)
     "시·도의회의원선거": "6",
     "구·시·군의회의원선거": "7",
     "광역의원비례대표선거": "8",
@@ -19,8 +18,8 @@ ELECTION_TYPE_TO_CODE = {
     "국회의원선거": "2",
 }
 
-# 5대 공약 제출 대상 선거 종류 (의원·비례대표는 제출 대상 아님)
-PLEDGE_TARGET_TYPES = {"시·도지사선거", "교육감선거", "구·시·군의 장선거"}
+# 5대 공약 제출 대상 선거 종류 (의원·비례대표는 제출 대상 아님, 교육감은 API 미지원)
+PLEDGE_TARGET_TYPES = {"시·도지사선거", "구·시·군의 장선거"}
 
 
 def fetch_pledges(cnddt_id: str, sg_typecode: str) -> dict:
