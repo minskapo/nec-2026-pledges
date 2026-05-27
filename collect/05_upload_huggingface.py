@@ -58,18 +58,20 @@ def main():
         )
         print("완료")
 
-    # pdfs/ 전체 폴더 업로드 (대용량 — 시간 소요)
+    # pdfs/ 전체 폴더 업로드 (대용량 — upload_large_folder 사용)
     pdf_files = sorted(PDF_DIR.glob("*.pdf"))
     print(f"\npdfs/ 업로드: {len(pdf_files)}개 (총 ~34GB, 시간 소요)")
-    print("진행 상황은 HuggingFace 대시보드에서 확인 가능합니다.")
+    print("중단 후 재실행해도 이어서 업로드됩니다.")
 
-    api.upload_folder(
-        folder_path=str(PDF_DIR),
-        path_in_repo="pdfs",
+    # folder_path=ROOT + allow_patterns 로 pdfs/ 경로 유지
+    api.upload_large_folder(
+        folder_path=str(ROOT),
         repo_id=REPO_ID,
         repo_type=REPO_TYPE,
-        multi_commits=True,
-        multi_commits_verbose=True,
+        allow_patterns="pdfs/*.pdf",
+        num_workers=4,
+        print_report=True,
+        print_report_every=60,
     )
 
     print(f"\n업로드 완료: https://huggingface.co/datasets/{REPO_ID}")
