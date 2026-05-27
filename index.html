@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>제9회 전국동시지방선거 공약 아카이브 (2026-06-03)</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      color: #222;
+      background: #f4f6fa;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #1a4b8c;
+      color: #fff;
+      padding: 20px 24px;
+    }
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    header p {
+      margin-top: 4px;
+      font-size: 0.82rem;
+      opacity: 0.8;
+    }
+
+    /* ── Main container ── */
+    main {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+      margin-bottom: 16px;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .filter-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .filter-group select,
+    .filter-group input[type="text"] {
+      height: 36px;
+      border: 1px solid #cdd3db;
+      border-radius: 6px;
+      padding: 0 10px;
+      font-size: 0.88rem;
+      background: #f9fafb;
+      color: #222;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .filter-group select:focus,
+    .filter-group input[type="text"]:focus {
+      border-color: #1a4b8c;
+      background: #fff;
+    }
+    .filter-group select { min-width: 140px; }
+    .filter-group input[type="text"] { min-width: 180px; }
+
+    .filter-reset {
+      height: 36px;
+      padding: 0 16px;
+      border: 1px solid #cdd3db;
+      border-radius: 6px;
+      background: #fff;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: #555;
+      align-self: flex-end;
+      transition: background .15s;
+    }
+    .filter-reset:hover { background: #f0f4ff; color: #1a4b8c; border-color: #1a4b8c; }
+
+    /* ── Summary bar ── */
+    .summary-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+      color: #555;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .summary-bar strong { color: #1a4b8c; }
+
+    /* ── Table wrapper ── */
+    .table-wrapper {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+    thead tr {
+      background: #1a4b8c;
+      color: #fff;
+    }
+    thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid #eef0f4;
+      transition: background .1s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover > td { background: #f0f5ff; }
+    td {
+      padding: 10px 14px;
+      vertical-align: middle;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-party { background: #e8f0fe; color: #1a4b8c; }
+    .badge-sign  { background: #fef3c7; color: #92400e; }
+
+    /* ── Action buttons ── */
+    .btn {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity .15s;
+      white-space: nowrap;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-pledge {
+      background: #1a4b8c;
+      color: #fff;
+    }
+    .btn-pdf {
+      background: #e63946;
+      color: #fff;
+      text-decoration: none;
+    }
+    .btn-none {
+      background: #e5e7eb;
+      color: #9ca3af;
+      cursor: default;
+      font-weight: 400;
+    }
+    .btn-none:hover { opacity: 1; }
+
+    /* ── Accordion row ── */
+    tr.accordion-row td {
+      padding: 0;
+      background: #f7f9ff;
+    }
+    .accordion-inner {
+      padding: 16px 20px;
+      border-top: 2px solid #1a4b8c;
+    }
+    .pledge-item {
+      margin-bottom: 14px;
+    }
+    .pledge-item:last-child { margin-bottom: 0; }
+    .pledge-title {
+      font-weight: 700;
+      color: #1a4b8c;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    .pledge-field {
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .pledge-content {
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: #333;
+      white-space: pre-wrap;
+      background: #fff;
+      border: 1px solid #e0e4ef;
+      border-radius: 6px;
+      padding: 10px 12px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    /* ── Pagination ── */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .page-btn {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+      border: 1px solid #cdd3db;
+      border-radius: 6px;
+      background: #fff;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background .1s, border-color .1s;
+    }
+    .page-btn:hover { background: #f0f4ff; border-color: #1a4b8c; color: #1a4b8c; }
+    .page-btn.active {
+      background: #1a4b8c;
+      border-color: #1a4b8c;
+      color: #fff;
+      font-weight: 700;
+    }
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+    .page-btn:disabled:hover { background: #fff; border-color: #cdd3db; color: inherit; }
+
+    /* ── Loading ── */
+    #loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #888;
+      font-size: 1rem;
+    }
+    #loading .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #1a4b8c;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── No results ── */
+    #no-results {
+      text-align: center;
+      padding: 48px 20px;
+      color: #888;
+      display: none;
+    }
+
+    /* ── Photo ── */
+    .photo-thumb {
+      width: 36px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 3px;
+      display: block;
+    }
+    .photo-placeholder {
+      width: 36px;
+      height: 44px;
+      background: #e5e7eb;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #aaa;
+      font-size: 18px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.1rem; }
+      .filter-bar { flex-direction: column; }
+      .filter-group select,
+      .filter-group input[type="text"] { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>제9회 전국동시지방선거 공약 아카이브</h1>
+  <p>선거일: 2026-06-03 &nbsp;|&nbsp; 수집일: 2026-05-26 &nbsp;|&nbsp; 총 후보자: <span id="total-count">로딩 중…</span>명 &nbsp;|&nbsp; 공약 보유: <span id="pledge-count">-</span>명</p>
+</header>
+
+<main>
+  <div class="filter-bar" id="filter-bar" style="display:none;">
+    <div class="filter-group">
+      <label>시·도</label>
+      <select id="filter-sido">
+        <option value="">전체 시·도</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>선거 종류</label>
+      <select id="filter-type">
+        <option value="">전체 선거종류</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>정당</label>
+      <select id="filter-party">
+        <option value="">전체 정당</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>공약 여부</label>
+      <select id="filter-pledge">
+        <option value="">전체</option>
+        <option value="yes">공약 있음</option>
+        <option value="no">공약 없음</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>이름 검색</label>
+      <input type="text" id="filter-name" placeholder="후보자 이름…" />
+    </div>
+    <button class="filter-reset" id="btn-reset">초기화</button>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    데이터 로딩 중…
+  </div>
+
+  <div id="app" style="display:none;">
+    <div class="summary-bar">
+      <span>검색결과: <strong id="result-count">0</strong>명</span>
+      <span id="page-info"></span>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:46px">사진</th>
+            <th>이름</th>
+            <th>기호</th>
+            <th>정당</th>
+            <th>선거구</th>
+            <th>선거종류</th>
+            <th>생년월일</th>
+            <th style="min-width:130px">공약/선거공보</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="no-results">검색 결과가 없습니다.</div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  const PAGE_SIZE = 50;
+  let allCandidates = [];
+  let pledgesMap = {};
+  let pdfMap = {};
+  let filtered = [];
+  let currentPage = 1;
+  let openAccordion = null; // { cnddtId, trEl }
+
+  // ── Helpers ──────────────────────────────────────────────────────────
+  function qs(sel) { return document.querySelector(sel); }
+
+  function extractMainSido(sido) {
+    // 강원특별자치도강릉시가선거구 → 강원특별자치도
+    const provinces = [
+      '서울특별시', '부산광역시', '대구광역시', '인천광역시', '광주광역시',
+      '대전광역시', '울산광역시', '세종특별자치시', '경기도', '강원특별자치도',
+      '충청북도', '충청남도', '전북특별자치도', '전남광주통합특별시',
+      '경상북도', '경상남도', '제주특별자치도'
+    ];
+    for (const p of provinces) {
+      if (sido.startsWith(p)) return p;
+    }
+    return sido;
+  }
+
+  // ── Load data ────────────────────────────────────────────────────────
+  async function loadData() {
+    try {
+      const [candidatesRes, pledgesRes, pdfRes] = await Promise.all([
+        fetch('data/candidates.json'),
+        fetch('data/pledges.json'),
+        fetch('data/pdf_urls.json'),
+      ]);
+      allCandidates = await candidatesRes.json();
+      pledgesMap    = await pledgesRes.json();
+      pdfMap        = await pdfRes.json();
+    } catch (e) {
+      qs('#loading').innerHTML = '<p style="color:#e63946">데이터 로드 실패: ' + e.message + '</p>';
+      throw e;
+    }
+  }
+
+  // ── Build filter dropdowns ───────────────────────────────────────────
+  function buildFilters() {
+    // Sidos — extract main province
+    const sidoSet = new Set();
+    allCandidates.forEach(c => sidoSet.add(extractMainSido(c.sido)));
+    const sidos = [...sidoSet].sort((a, b) => a.localeCompare(b));
+    const sidoSel = qs('#filter-sido');
+    sidos.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = s;
+      sidoSel.appendChild(o);
+    });
+
+    // Election types
+    const typeSet = new Set();
+    allCandidates.forEach(c => typeSet.add(c.electionType));
+    const types = [...typeSet].sort((a, b) => a.localeCompare(b));
+    const typeSel = qs('#filter-type');
+    types.forEach(t => {
+      const o = document.createElement('option');
+      o.value = t; o.textContent = t;
+      typeSel.appendChild(o);
+    });
+
+    // Parties
+    const partySet = new Set();
+    allCandidates.forEach(c => { if (c.party) partySet.add(c.party); });
+    const parties = [...partySet].sort((a, b) => a.localeCompare(b));
+    const partySel = qs('#filter-party');
+    parties.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p; o.textContent = p;
+      partySel.appendChild(o);
+    });
+  }
+
+  // ── Filter & render ──────────────────────────────────────────────────
+  function applyFilters() {
+    const sido    = qs('#filter-sido').value;
+    const type    = qs('#filter-type').value;
+    const party   = qs('#filter-party').value;
+    const pledge  = qs('#filter-pledge').value;
+    const name    = qs('#filter-name').value.trim();
+
+    filtered = allCandidates.filter(c => {
+      if (sido  && !c.sido.startsWith(sido))        return false;
+      if (type  && c.electionType !== type)          return false;
+      if (party && c.party !== party)                return false;
+      if (pledge === 'yes' && !pledgesMap[c.cnddtId]) return false;
+      if (pledge === 'no'  &&  pledgesMap[c.cnddtId]) return false;
+      if (name  && !c.name.includes(name))           return false;
+      return true;
+    });
+
+    currentPage = 1;
+    closeAccordion();
+    renderTable();
+    renderPagination();
+  }
+
+  // ── Accordion management ─────────────────────────────────────────────
+  function closeAccordion() {
+    if (openAccordion) {
+      openAccordion.remove();
+      openAccordion = null;
+    }
+  }
+
+  function toggleAccordion(cnddtId, btn, baseRow) {
+    // Close if already open
+    if (openAccordion && openAccordion.dataset.id === cnddtId) {
+      closeAccordion();
+      btn.textContent = '공약 ▼';
+      return;
+    }
+    // Close previous
+    closeAccordion();
+    // Restore all pledge buttons
+    document.querySelectorAll('.btn-pledge[data-open="true"]').forEach(b => {
+      b.textContent = '공약 ▼';
+      b.dataset.open = 'false';
+    });
+
+    const pledges = pledgesMap[cnddtId];
+    if (!pledges) return;
+
+    const keys = Object.keys(pledges).sort((a, b) => Number(a) - Number(b));
+    const tr = document.createElement('tr');
+    tr.className = 'accordion-row';
+    tr.dataset.id = cnddtId;
+
+    const colCount = 8;
+    const td = document.createElement('td');
+    td.colSpan = colCount;
+
+    const inner = document.createElement('div');
+    inner.className = 'accordion-inner';
+
+    keys.forEach((k, i) => {
+      const p = pledges[k];
+      const item = document.createElement('div');
+      item.className = 'pledge-item';
+
+      const title = document.createElement('div');
+      title.className = 'pledge-title';
+      title.textContent = `공약 ${i+1}. ${p.title || '(제목 없음)'}`;
+
+      const content = document.createElement('div');
+      content.className = 'pledge-content';
+      content.textContent = p.content || '(내용 없음)';
+
+      item.appendChild(title);
+
+      if (p.field) {
+        const field = document.createElement('div');
+        field.className = 'pledge-field';
+        field.textContent = '분야: ' + p.field;
+        item.appendChild(field);
+      }
+
+      item.appendChild(content);
+      inner.appendChild(item);
+    });
+
+    td.appendChild(inner);
+    tr.appendChild(td);
+
+    // Insert after baseRow
+    baseRow.parentNode.insertBefore(tr, baseRow.nextSibling);
+    openAccordion = tr;
+    btn.textContent = '공약 ▲';
+    btn.dataset.open = 'true';
+  }
+
+  // ── Render table ─────────────────────────────────────────────────────
+  function renderTable() {
+    const tbody = qs('#tbody');
+    tbody.innerHTML = '';
+
+    const total = filtered.length;
+    qs('#result-count').textContent = total.toLocaleString();
+
+    const noResults = qs('#no-results');
+
+    if (total === 0) {
+      noResults.style.display = 'block';
+      updatePageInfo(0, 0, 0);
+      return;
+    }
+    noResults.style.display = 'none';
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end   = Math.min(start + PAGE_SIZE, total);
+    updatePageInfo(start + 1, end, total);
+
+    const frag = document.createDocumentFragment();
+
+    for (let i = start; i < end; i++) {
+      const c = filtered[i];
+      const hasPledge = !!pledgesMap[c.cnddtId];
+      const pdfUrl    = pdfMap[c.cnddtId];
+
+      const tr = document.createElement('tr');
+
+      // Photo
+      const tdPhoto = document.createElement('td');
+      if (c.photoUrl) {
+        const img = document.createElement('img');
+        img.src = c.photoUrl;
+        img.alt = c.name;
+        img.className = 'photo-thumb';
+        img.onerror = function() {
+          const ph = document.createElement('div');
+          ph.className = 'photo-placeholder';
+          ph.textContent = '👤';
+          this.parentNode.replaceChild(ph, this);
+        };
+        tdPhoto.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.className = 'photo-placeholder';
+        ph.textContent = '👤';
+        tdPhoto.appendChild(ph);
+      }
+
+      // Name
+      const tdName = document.createElement('td');
+      tdName.style.fontWeight = '600';
+      tdName.textContent = c.name;
+
+      // Sign
+      const tdSign = document.createElement('td');
+      const signBadge = document.createElement('span');
+      signBadge.className = 'badge badge-sign';
+      signBadge.textContent = c.sign || '-';
+      tdSign.appendChild(signBadge);
+
+      // Party
+      const tdParty = document.createElement('td');
+      const partyBadge = document.createElement('span');
+      partyBadge.className = 'badge badge-party';
+      partyBadge.textContent = c.party || '무소속';
+      tdParty.appendChild(partyBadge);
+
+      // District
+      const tdDistrict = document.createElement('td');
+      tdDistrict.style.fontSize = '0.82rem';
+      tdDistrict.style.color = '#555';
+      tdDistrict.textContent = c.district || c.sido || '-';
+
+      // Election type
+      const tdType = document.createElement('td');
+      tdType.style.fontSize = '0.82rem';
+      tdType.textContent = c.electionType || '-';
+
+      // Birth
+      const tdBirth = document.createElement('td');
+      tdBirth.style.fontSize = '0.8rem';
+      tdBirth.style.color = '#666';
+      tdBirth.style.whiteSpace = 'nowrap';
+      tdBirth.textContent = c.birthInfo ? c.birthInfo.split('/')[0] : '-';
+
+      // Actions
+      const tdActions = document.createElement('td');
+      tdActions.style.whiteSpace = 'nowrap';
+
+      if (hasPledge) {
+        const btnPledge = document.createElement('button');
+        btnPledge.className = 'btn btn-pledge';
+        btnPledge.textContent = '공약 ▼';
+        btnPledge.dataset.open = 'false';
+        btnPledge.addEventListener('click', () => {
+          toggleAccordion(c.cnddtId, btnPledge, tr);
+        });
+        tdActions.appendChild(btnPledge);
+      } else {
+        const span = document.createElement('span');
+        span.className = 'btn btn-none';
+        span.textContent = '공약없음';
+        tdActions.appendChild(span);
+      }
+
+      if (pdfUrl) {
+        const link = document.createElement('a');
+        link.className = 'btn btn-pdf';
+        link.textContent = ' 공보↗';
+        link.href = pdfUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.style.marginLeft = '6px';
+        tdActions.appendChild(link);
+      }
+
+      tr.appendChild(tdPhoto);
+      tr.appendChild(tdName);
+      tr.appendChild(tdSign);
+      tr.appendChild(tdParty);
+      tr.appendChild(tdDistrict);
+      tr.appendChild(tdType);
+      tr.appendChild(tdBirth);
+      tr.appendChild(tdActions);
+
+      frag.appendChild(tr);
+    }
+
+    tbody.appendChild(frag);
+  }
+
+  // ── Pagination ───────────────────────────────────────────────────────
+  function updatePageInfo(from, to, total) {
+    qs('#page-info').textContent =
+      total ? `${from.toLocaleString()}–${to.toLocaleString()} / ${total.toLocaleString()}명` : '';
+  }
+
+  function renderPagination() {
+    const pg = qs('#pagination');
+    pg.innerHTML = '';
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    if (totalPages <= 1) return;
+
+    function mkBtn(label, page, disabled = false, active = false) {
+      const btn = document.createElement('button');
+      btn.className = 'page-btn' + (active ? ' active' : '');
+      btn.textContent = label;
+      btn.disabled = disabled;
+      if (!disabled && !active) {
+        btn.addEventListener('click', () => {
+          closeAccordion();
+          currentPage = page;
+          renderTable();
+          renderPagination();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+      return btn;
+    }
+
+    // Prev
+    pg.appendChild(mkBtn('‹', currentPage - 1, currentPage === 1));
+
+    // Page numbers (show up to 10 around current)
+    const delta = 4;
+    let start = Math.max(1, currentPage - delta);
+    let end   = Math.min(totalPages, currentPage + delta);
+    if (end - start < 8) {
+      if (start === 1) end = Math.min(totalPages, start + 8);
+      else if (end === totalPages) start = Math.max(1, end - 8);
+    }
+
+    if (start > 1) {
+      pg.appendChild(mkBtn('1', 1));
+      if (start > 2) {
+        const dots = document.createElement('span');
+        dots.textContent = '…';
+        dots.style.padding = '0 4px';
+        pg.appendChild(dots);
+      }
+    }
+
+    for (let p = start; p <= end; p++) {
+      pg.appendChild(mkBtn(String(p), p, false, p === currentPage));
+    }
+
+    if (end < totalPages) {
+      if (end < totalPages - 1) {
+        const dots = document.createElement('span');
+        dots.textContent = '…';
+        dots.style.padding = '0 4px';
+        pg.appendChild(dots);
+      }
+      pg.appendChild(mkBtn(String(totalPages), totalPages));
+    }
+
+    // Next
+    pg.appendChild(mkBtn('›', currentPage + 1, currentPage === totalPages));
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────
+  async function init() {
+    await loadData();
+
+    // Stats
+    qs('#total-count').textContent  = allCandidates.length.toLocaleString();
+    qs('#pledge-count').textContent = Object.keys(pledgesMap).length.toLocaleString();
+
+    buildFilters();
+
+    // Event listeners
+    ['filter-sido', 'filter-type', 'filter-party', 'filter-pledge'].forEach(id => {
+      qs('#' + id).addEventListener('change', applyFilters);
+    });
+    qs('#filter-name').addEventListener('input', applyFilters);
+    qs('#btn-reset').addEventListener('click', () => {
+      ['filter-sido', 'filter-type', 'filter-party', 'filter-pledge'].forEach(id => {
+        qs('#' + id).value = '';
+      });
+      qs('#filter-name').value = '';
+      applyFilters();
+    });
+
+    // Initial render
+    applyFilters();
+
+    qs('#loading').style.display = 'none';
+    qs('#filter-bar').style.display = '';
+    qs('#app').style.display = '';
+  }
+
+  init().catch(err => {
+    console.error(err);
+  });
+})();
+</script>
+</body>
+</html>
