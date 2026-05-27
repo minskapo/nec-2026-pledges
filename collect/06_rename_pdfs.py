@@ -1,11 +1,12 @@
 """
 pdfs/{cnddtId}.pdf → {선거명}-{지역}-{기호}번-{후보자명}({정당}).pdf
 
-지역: 시도약칭[_구군][_선거구]
+지역: 시도약칭[_구군][_선거구]  (언더스코어 구분)
 특수 규칙:
-  - 교육감: 정당 표시 없음  → 교육감-서울-번호미상-홍길동.pdf
-  - 비례대표: 정당이 주체  → 광역비례-서울-1번-더불어민주당.pdf
-  - 기초의원 복수기호: 1-나 → 1_나번 (대시 → 언더스코어)
+  - 교육감: 정당 표시 없음
+  - 비례대표: 후보자명 대신 정당명
+  - 기초의원 복수기호: 1-나 → 1_나번
+  - 제주/세종: sido가 도명 중복이라 district 필드로 선거구 추출
 """
 
 import json
@@ -54,22 +55,58 @@ _SIDO_SORTED = sorted(SIDO_ABBR.items(), key=lambda x: -len(x[0]))
 INVALID_CHARS = re.compile(r'[/\\:*?"<>|\s]')
 
 
-def parse_region(sido: str) -> str:
+def _extract_sg_from_extra(extra: str) -> str:
+    """'제주시 구좌읍·우도면선거구' 같은 district 잔여 문자열에서 선거구명 추출."""
+    extra = extra.strip()
+    if not extra:
+        return ""
+    last = extra.split()[-1]
+    sg = last.replace("선거구", "").strip()
+    sg = re.sub(r"^제(\d+)$", r"\1", sg)
+    return sg
+
+
+def parse_region(sido: str, district: str = "") -> str:
+    """sido (+ 필요시 district)로부터 '시도약칭[_구군][_선거구]' 생성."""
     for full, abbr in _SIDO_SORTED:
-        if sido.startswith(full):
-            rest = sido[len(full):]
-            if not rest:
+        if not sido.startswith(full):
+            continue
+
+        rest = sido[len(full):]
+
+        # ── 도명 중복 케이스 (제주특별자치도제주특별자치도, 세종특별자치시세종특별자치시…)
+        if rest.startswith(full):
+            rest2 = rest[len(full):]
+            if rest2:
+                # 세종: "제1선거구" 등 선거구 정보가 sido에 포함
+                sg = rest2.replace("선거구", "").strip()
+                sg = re.sub(r"^제(\d+)$", r"\1", sg)
+                return f"{abbr}_{sg}" if sg else abbr
+            else:
+                # 제주: sido에 선거구 없음 → district fallback
+                if district and district != sido:
+                    extra = district[len(sido):].strip()
+                    sg = _extract_sg_from_extra(extra)
+                    return f"{abbr}_{sg}" if sg else abbr
                 return abbr
-            m = re.match(r'^(.+?[구시군읍면])(.*)?$', rest)
-            if m:
-                district = m.group(1)
-                sg = re.sub(r'선거구', '', m.group(2) or '').strip()
-                sg = re.sub(r'^제(\d+)$', r'\1', sg)
-                parts = [abbr, district]
-                if sg:
-                    parts.append(sg)
-                return "_".join(parts)
-            return f"{abbr}_{rest}"
+
+        # ── 도명만 있는 경우 (광역단체장, 교육감 등)
+        if not rest:
+            return abbr
+
+        # ── 일반 케이스: "중구제2선거구", "종로구나선거구", "춘천시제2선거구" 등
+        m = re.match(r"^(.+?[구시군읍면])(.*)?$", rest)
+        if m:
+            district_name = m.group(1)
+            sg = re.sub(r"선거구", "", m.group(2) or "").strip()
+            sg = re.sub(r"^제(\d+)$", r"\1", sg)
+            parts = [abbr, district_name]
+            if sg:
+                parts.append(sg)
+            return "_".join(parts)
+
+        return f"{abbr}_{rest}"
+
     return INVALID_CHARS.sub("_", sido)
 
 
@@ -88,7 +125,7 @@ def make_sign(raw: str) -> str:
 def make_filename(c: dict) -> str:
     et       = c.get("electionType", "")
     election = ELECTION_TYPE_MAP.get(et, et)
-    region   = parse_region(c.get("sido", ""))
+    region   = parse_region(c.get("sido", ""), c.get("district", ""))
     sign     = make_sign(c.get("sign", ""))
     name     = INVALID_CHARS.sub("_", c.get("name", ""))
     party    = INVALID_CHARS.sub("_", c.get("party") or "무소속")
@@ -100,32 +137,66 @@ def make_filename(c: dict) -> str:
     return f"{election}-{region}-{sign}-{name}({party}).pdf"
 
 
-# ── 이전 버전(v1) 파일명 생성 (이미 rename된 파일 역추적용) ────────────────
-def _make_sign_v1(raw: str) -> str:
-    if "기호" in raw:
-        return raw.replace("기호", "").strip() + "번"
-    if "추천순위" in raw:
-        return "추천" + raw.replace("추천순위", "").strip() + "번"
-    n = raw.strip()
-    return f"{n}번" if n else "번호미상"
+# ── 이전 버전 파일명 생성 (이미 rename된 파일 역추적용) ─────────────────────
+
+def _parse_region_old(sido: str) -> str:
+    """구 버전 parse_region (district 미사용, 중복 감지 없음)."""
+    for full, abbr in _SIDO_SORTED:
+        if sido.startswith(full):
+            rest = sido[len(full):]
+            if not rest:
+                return abbr
+            m = re.match(r"^(.+?[구시군읍면])(.*)?$", rest)
+            if m:
+                district = m.group(1)
+                sg = re.sub(r"선거구", "", m.group(2) or "").strip()
+                sg = re.sub(r"^제(\d+)$", r"\1", sg)
+                parts = [abbr, district]
+                if sg:
+                    parts.append(sg)
+                return "_".join(parts)
+            return f"{abbr}_{rest}"
+    return INVALID_CHARS.sub("_", sido)
 
 
 def _make_filename_v1(c: dict) -> str:
+    """최초 rename 버전: 교육감/비례 특수처리 없음, 추천N번 형식."""
     election = ELECTION_TYPE_MAP.get(c.get("electionType", ""), c.get("electionType", ""))
-    region   = parse_region(c.get("sido", ""))
-    sign     = _make_sign_v1(c.get("sign", ""))
-    name     = INVALID_CHARS.sub("_", c.get("name", ""))
-    party    = INVALID_CHARS.sub("_", c.get("party") or "무소속")
+    region   = _parse_region_old(c.get("sido", ""))
+    raw_sign = c.get("sign", "")
+    if "기호" in raw_sign:
+        sign = raw_sign.replace("기호", "").strip() + "번"
+    elif "추천순위" in raw_sign:
+        sign = "추천" + raw_sign.replace("추천순위", "").strip() + "번"
+    else:
+        n = raw_sign.strip()
+        sign = f"{n}번" if n else "번호미상"
+    name  = INVALID_CHARS.sub("_", c.get("name", ""))
+    party = INVALID_CHARS.sub("_", c.get("party") or "무소속")
     return f"{election}-{region}-{sign}-{name}({party}).pdf"
 
+
+def _make_filename_v2(c: dict) -> str:
+    """두 번째 rename 버전: 교육감/비례 특수처리 + sign 대시→언더스코어, 단 district 미사용."""
+    et       = c.get("electionType", "")
+    election = ELECTION_TYPE_MAP.get(et, et)
+    region   = _parse_region_old(c.get("sido", ""))
+    sign     = make_sign(c.get("sign", ""))
+    name     = INVALID_CHARS.sub("_", c.get("name", ""))
+    party    = INVALID_CHARS.sub("_", c.get("party") or "무소속")
+    if "교육감" in et:
+        return f"{election}-{region}-{sign}-{name}.pdf"
+    if "비례대표" in et:
+        return f"{election}-{region}-{sign}-{party}.pdf"
+    return f"{election}-{region}-{sign}-{name}({party}).pdf"
+
+
+# ── 메인 ─────────────────────────────────────────────────────────────────────
 
 def main(dry_run: bool = False):
     with open(DATA_DIR / "candidates.json", encoding="utf-8") as f:
         candidates = json.load(f)
 
-    id_to_cand = {c["cnddtId"]: c for c in candidates}
-
-    # 현재 pdfs/ 파일 목록
     existing: dict[str, Path] = {p.name: p for p in PDF_DIR.glob("*.pdf")}
 
     renamed = skipped = error = 0
@@ -133,31 +204,24 @@ def main(dry_run: bool = False):
 
     def unique_name(name: str) -> str:
         base, ext = name.rsplit(".", 1)
-        key = name
-        if key in seen:
-            seen[key] += 1
-            key = f"{base}_{seen[key]}.{ext}"
-        else:
-            seen[key] = 1
-        return key
+        if name not in seen:
+            seen[name] = 1
+            return name
+        seen[name] += 1
+        return f"{base}_{seen[name]}.{ext}"
 
-    for cid, cand in id_to_cand.items():
+    for cand in candidates:
+        cid      = cand["cnddtId"]
         new_name = unique_name(make_filename(cand))
 
-        # 후보: (1) cnddtId.pdf → 직접 rename
-        #       (2) v1 descriptive name → re-rename
         src_path = None
-        if f"{cid}.pdf" in existing:
-            src_path = existing[f"{cid}.pdf"]
-        else:
-            v1_name = _make_filename_v1(cand)
-            if v1_name in existing:
-                src_path = existing[v1_name]
+        for old_name in (f"{cid}.pdf", _make_filename_v1(cand), _make_filename_v2(cand)):
+            if old_name in existing:
+                src_path = existing[old_name]
+                break
 
         if src_path is None:
-            continue  # PDF 없음
-
-        new_path = PDF_DIR / new_name
+            continue
 
         if src_path.name == new_name:
             skipped += 1
@@ -168,6 +232,7 @@ def main(dry_run: bool = False):
             renamed += 1
             continue
 
+        new_path = PDF_DIR / new_name
         if new_path.exists():
             skipped += 1
             continue
