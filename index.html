@@ -96,6 +96,24 @@
     }
     .filter-reset:hover { background: #f0f4ff; color: #1a4b8c; border-color: #1a4b8c; }
 
+    /* ── Download button ── */
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+    .btn-download:hover:not(:disabled) { background: rgba(255,255,255,0.25); }
+    .btn-download:disabled { opacity: 0.5; cursor: default; }
+
     /* ── Summary bar ── */
     .summary-bar {
       display: flex;
@@ -312,8 +330,15 @@
 <body>
 
 <header>
-  <h1>제9회 전국동시지방선거 공약 아카이브</h1>
-  <p>선거일: 2026-06-03 &nbsp;|&nbsp; 수집일: 2026-05-26 &nbsp;|&nbsp; 총 후보자: <span id="total-count">로딩 중…</span>명 &nbsp;|&nbsp; 공약 보유: <span id="pledge-count">-</span>명</p>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+    <div>
+      <h1>제9회 전국동시지방선거 공약 아카이브</h1>
+      <p>선거일: 2026-06-03 &nbsp;|&nbsp; 수집일: 2026-05-26 &nbsp;|&nbsp; 총 후보자: <span id="total-count">로딩 중…</span>명 &nbsp;|&nbsp; 공약 보유: <span id="pledge-count">-</span>명</p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="btn-download" id="btn-dl-script" onclick="downloadPdfScript()" disabled title="pdf_urls.json 기반 wget 스크립트 다운로드">⬇ 선거공보 PDF 일괄 다운로드 스크립트</button>
+    </div>
+  </div>
 </header>
 
 <main>
@@ -796,7 +821,29 @@
     qs('#loading').style.display = 'none';
     qs('#filter-bar').style.display = '';
     qs('#app').style.display = '';
+    qs('#btn-dl-script').disabled = false;
   }
+
+  window.downloadPdfScript = function() {
+    const lines = [
+      '#!/usr/bin/env bash',
+      '# 제9회 전국동시지방선거 선거공보 PDF 일괄 다운로드',
+      '# 사용법: chmod +x download_pdfs.sh && ./download_pdfs.sh',
+      '# 요구사항: wget  (macOS: brew install wget)',
+      'mkdir -p pdfs',
+    ];
+    let n = 0;
+    for (const [id, url] of Object.entries(pdfMap)) {
+      if (url) { lines.push('wget -q -c -O "pdfs/' + id + '.pdf" "' + url + '"'); n++; }
+    }
+    lines.push('echo "다운로드 완료 (총 ' + n + '개)"');
+    const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'download_pdfs.sh';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
 
   init().catch(err => {
     console.error(err);
